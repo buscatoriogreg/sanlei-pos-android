@@ -10,3 +10,6 @@
 .cxx
 local.properties
 output/
+*.jks
+*.jks.b64
+*.keystore
