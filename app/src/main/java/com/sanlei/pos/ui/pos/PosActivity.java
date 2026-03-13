@@ -461,7 +461,8 @@ public class PosActivity extends AppCompatActivity {
                 product.sellingPrice,
                 1,
                 product.isVatable,
-                product.stock
+                product.stock,
+                product.image
         );
         cartItems.add(newItem);
         cartAdapter.notifyItemInserted(cartItems.size() - 1);
@@ -684,7 +685,7 @@ public class PosActivity extends AppCompatActivity {
             }
 
             // Print receipt
-            printReceipt(receiptItems, subtotal, discountAmount, total,
+            printReceipt(localId, receiptItems, subtotal, discountAmount, total,
                     finalAmountPaid, finalChange, finalDiscountType, finalDiscountIdNumber);
 
             // Reload products to reflect stock changes
@@ -735,7 +736,7 @@ public class PosActivity extends AppCompatActivity {
     // -------------------------------------------------------------------------
     // Receipt printing
     // -------------------------------------------------------------------------
-    private void printReceipt(List<CartItem> items, double subtotal, double discountAmount,
+    private void printReceipt(String localId, List<CartItem> items, double subtotal, double discountAmount,
                               double total, double amountPaid, double change,
                               String discountType, String discountIdNumber) {
         try {
@@ -743,7 +744,7 @@ public class PosActivity extends AppCompatActivity {
             data.branchName = session.getBranchName();
             data.branchAddress = session.getBranchAddress();
             data.branchPhone = session.getBranchPhone();
-            data.invoiceNumber = null; // will show "OFFLINE"
+            data.invoiceNumber = new SimpleDateFormat("yyyyMMdd-HHmm", Locale.US).format(new Date()) + "-" + localId.substring(0, 4).toUpperCase(Locale.ROOT);
             data.cashierName = session.getUserName();
             data.dateTime = new SimpleDateFormat("MM/dd/yyyy hh:mm a", Locale.US).format(new Date());
 

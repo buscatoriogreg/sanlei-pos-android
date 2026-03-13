@@ -4,9 +4,11 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageButton;
+import android.widget.ImageView;
 import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
+import com.bumptech.glide.Glide;
 import com.sanlei.pos.R;
 import java.util.ArrayList;
 import java.util.List;
@@ -49,6 +51,19 @@ public class CartAdapter extends RecyclerView.Adapter<CartAdapter.ViewHolder> {
         holder.txtQuantity.setText(String.valueOf(item.quantity));
         holder.txtLineTotal.setText(String.format("P%,.2f", item.unitPrice * item.quantity));
 
+        // Load product image
+        if (item.image != null && !item.image.isEmpty()) {
+            String imageUrl = "https://sp.rgbpos.com/storage/" + item.image;
+            Glide.with(holder.itemView.getContext())
+                .load(imageUrl)
+                .centerCrop()
+                .placeholder(android.R.color.transparent)
+                .into(holder.imgProduct);
+        } else {
+            holder.imgProduct.setImageResource(android.R.drawable.ic_menu_gallery);
+            holder.imgProduct.setAlpha(0.3f);
+        }
+
         holder.btnPlus.setOnClickListener(v -> {
             int pos = holder.getAdapterPosition();
             if (pos != RecyclerView.NO_POSITION && listener != null) {
@@ -82,12 +97,14 @@ public class CartAdapter extends RecyclerView.Adapter<CartAdapter.ViewHolder> {
     }
 
     static class ViewHolder extends RecyclerView.ViewHolder {
+        ImageView imgProduct;
         TextView txtItemName, txtUnitPrice, txtQuantity, txtLineTotal;
         View btnMinus, btnPlus;
         View btnRemove;
 
         ViewHolder(@NonNull View itemView) {
             super(itemView);
+            imgProduct = itemView.findViewById(R.id.imgCartProduct);
             txtItemName = itemView.findViewById(R.id.txtCartProductName);
             txtUnitPrice = itemView.findViewById(R.id.txtCartUnitPrice);
             txtQuantity = itemView.findViewById(R.id.txtQuantity);

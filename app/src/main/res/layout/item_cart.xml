@@ -6,6 +6,16 @@
     android:orientation="horizontal"
     android:padding="8dp">
 
+    <!-- Product image -->
+    <ImageView
+        android:id="@+id/imgCartProduct"
+        android:layout_width="40dp"
+        android:layout_height="40dp"
+        android:scaleType="centerCrop"
+        android:background="#F3F4F6"
+        android:layout_marginEnd="8dp"
+        android:contentDescription="Product image" />
+
     <!-- Left: Product info -->
     <LinearLayout
         android:layout_width="0dp"

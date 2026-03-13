@@ -82,7 +82,7 @@ public class EscPosCommands {
 
             // Items header
             out.write(BOLD_ON);
-            out.write(String.format("%-14s %3s %6s %7s\n", "Item", "Qty", "Price", "Total").getBytes());
+            out.write(String.format("%-12s%4s %7s %7s\n", "Item", "Qty", "Price", "Total").getBytes());
             out.write(BOLD_OFF);
             out.write(dashes());
 
@@ -138,8 +138,6 @@ public class EscPosCommands {
             out.write(ALIGN_CENTER);
             out.write("\n".getBytes());
             out.write("Thank you for your purchase!\n".getBytes());
-            out.write("This serves as your\n".getBytes());
-            out.write("Official Receipt\n".getBytes());
             out.write("\n".getBytes());
 
             out.write(FEED_3);
