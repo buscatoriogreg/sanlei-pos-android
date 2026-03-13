@@ -100,6 +100,9 @@ public class PosActivity extends AppCompatActivity {
     // Current payment method
     private String paymentMethod = "cash";
 
+    // View mode
+    private boolean isGridView = true;
+
     // -------------------------------------------------------------------------
     // onCreate
     // -------------------------------------------------------------------------
@@ -171,7 +174,10 @@ public class PosActivity extends AppCompatActivity {
         toolbar.setSubtitle(session.getBranchName());
         toolbar.setOnMenuItemClickListener(item -> {
             int id = item.getItemId();
-            if (id == R.id.action_sync) {
+            if (id == R.id.action_view_toggle) {
+                toggleProductView();
+                return true;
+            } else if (id == R.id.action_sync) {
                 onSyncNow();
                 return true;
             } else if (id == R.id.action_printer_setup) {
@@ -188,12 +194,23 @@ public class PosActivity extends AppCompatActivity {
         });
     }
 
+    private void toggleProductView() {
+        isGridView = !isGridView;
+        if (isGridView) {
+            recyclerProducts.setLayoutManager(new GridLayoutManager(this, 3));
+            productAdapter.setViewType(ProductAdapter.VIEW_TYPE_GRID);
+        } else {
+            recyclerProducts.setLayoutManager(new LinearLayoutManager(this));
+            productAdapter.setViewType(ProductAdapter.VIEW_TYPE_LIST);
+        }
+    }
+
     // -------------------------------------------------------------------------
     // Product RecyclerView
     // -------------------------------------------------------------------------
     private void setupProductRecycler() {
         recyclerProducts.setLayoutManager(new GridLayoutManager(this, 3));
-        productAdapter = new ProductAdapter(new ArrayList<>(), product -> addToCart(product));
+        productAdapter = new ProductAdapter(product -> addToCart(product));
         recyclerProducts.setAdapter(productAdapter);
     }
 
@@ -212,17 +229,18 @@ public class PosActivity extends AppCompatActivity {
     // -------------------------------------------------------------------------
     private void setupCartRecycler() {
         recyclerCart.setLayoutManager(new LinearLayoutManager(this));
-        cartAdapter = new CartAdapter(cartItems, new CartAdapter.CartCallback() {
+        cartAdapter = new CartAdapter(new CartAdapter.CartActionListener() {
             @Override
-            public void onQuantityChanged(int position, int newQty) {
-                updateQuantity(position, newQty);
+            public void onQuantityChanged(int position, int newQuantity) {
+                updateQuantity(position, newQuantity);
             }
 
             @Override
-            public void onRemove(int position) {
+            public void onRemoveItem(int position) {
                 removeFromCart(position);
             }
         });
+        cartAdapter.setItems(cartItems);
         recyclerCart.setAdapter(cartAdapter);
     }
 
@@ -276,9 +294,9 @@ public class PosActivity extends AppCompatActivity {
     private void setupLetterFilter() {
         letterFilterLayout.removeAllViews();
 
-        int padH = dpToPx(12);
-        int padV = dpToPx(4);
-        int margin = dpToPx(2);
+        int padH = dpToPx(16);
+        int padV = dpToPx(8);
+        int margin = dpToPx(3);
 
         // "All" button
         MaterialButton allBtn = createLetterButton("All", padH, padV, margin);
@@ -311,11 +329,11 @@ public class PosActivity extends AppCompatActivity {
         MaterialButton btn = new MaterialButton(this, null,
                 com.google.android.material.R.attr.materialButtonOutlinedStyle);
         btn.setText(text);
-        btn.setTextSize(TypedValue.COMPLEX_UNIT_SP, 11);
-        btn.setMinWidth(0);
-        btn.setMinimumWidth(0);
-        btn.setMinHeight(0);
-        btn.setMinimumHeight(0);
+        btn.setTextSize(TypedValue.COMPLEX_UNIT_SP, 14);
+        btn.setMinWidth(dpToPx(40));
+        btn.setMinimumWidth(dpToPx(40));
+        btn.setMinHeight(dpToPx(36));
+        btn.setMinimumHeight(dpToPx(36));
         btn.setPadding(padH, padV, padH, padV);
         btn.setInsetTop(0);
         btn.setInsetBottom(0);
@@ -334,19 +352,19 @@ public class PosActivity extends AppCompatActivity {
         layoutDenominations.removeAllViews();
         denomButtons.clear();
 
-        int padH = dpToPx(8);
-        int padV = dpToPx(4);
-        int margin = dpToPx(3);
+        int padH = dpToPx(14);
+        int padV = dpToPx(8);
+        int margin = dpToPx(4);
 
         for (int denom : DENOMINATIONS) {
             MaterialButton btn = new MaterialButton(this, null,
                     com.google.android.material.R.attr.materialButtonOutlinedStyle);
             btn.setText("P" + denom);
-            btn.setTextSize(TypedValue.COMPLEX_UNIT_SP, 11);
-            btn.setMinWidth(0);
-            btn.setMinimumWidth(0);
-            btn.setMinHeight(0);
-            btn.setMinimumHeight(0);
+            btn.setTextSize(TypedValue.COMPLEX_UNIT_SP, 14);
+            btn.setMinWidth(dpToPx(56));
+            btn.setMinimumWidth(dpToPx(56));
+            btn.setMinHeight(dpToPx(40));
+            btn.setMinimumHeight(dpToPx(40));
             btn.setPadding(padH, padV, padH, padV);
             btn.setInsetTop(0);
             btn.setInsetBottom(0);
@@ -946,258 +964,5 @@ public class PosActivity extends AppCompatActivity {
     private int dpToPx(int dp) {
         return (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, dp,
                 getResources().getDisplayMetrics());
-    }
-
-    // =========================================================================
-    // ProductAdapter (inner class)
-    // =========================================================================
-    static class ProductAdapter extends RecyclerView.Adapter<ProductAdapter.ViewHolder> {
-
-        interface OnProductClickListener {
-            void onClick(ProductEntity product);
-        }
-
-        private List<ProductEntity> products;
-        private final OnProductClickListener listener;
-
-        ProductAdapter(List<ProductEntity> products, OnProductClickListener listener) {
-            this.products = products;
-            this.listener = listener;
-        }
-
-        void setProducts(List<ProductEntity> products) {
-            this.products = products;
-            notifyDataSetChanged();
-        }
-
-        @NonNull
-        @Override
-        public ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-            View view = LayoutInflater.from(parent.getContext())
-                    .inflate(android.R.layout.simple_list_item_2, parent, false);
-            return new ViewHolder(view);
-        }
-
-        @Override
-        public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
-            ProductEntity product = products.get(position);
-
-            holder.txtName.setText(product.name != null ? product.name : "");
-            holder.txtName.setTextSize(TypedValue.COMPLEX_UNIT_SP, 13);
-            holder.txtName.setMaxLines(2);
-
-            String priceStock = String.format("P%,.2f | Stock: %d", product.sellingPrice, product.stock);
-            holder.txtDetail.setText(priceStock);
-            holder.txtDetail.setTextSize(TypedValue.COMPLEX_UNIT_SP, 11);
-
-            // Dim out low stock
-            float alpha = product.stock <= 3 ? 0.6f : 1.0f;
-            holder.itemView.setAlpha(alpha);
-
-            holder.itemView.setOnClickListener(v -> {
-                if (listener != null) listener.onClick(product);
-            });
-
-            // Card-like appearance
-            holder.itemView.setBackgroundResource(android.R.drawable.dialog_holo_light_frame);
-            int pad = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 8,
-                    holder.itemView.getResources().getDisplayMetrics());
-            holder.itemView.setPadding(pad, pad, pad, pad);
-
-            ViewGroup.MarginLayoutParams lp = (ViewGroup.MarginLayoutParams) holder.itemView.getLayoutParams();
-            int m = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 4,
-                    holder.itemView.getResources().getDisplayMetrics());
-            lp.setMargins(m, m, m, m);
-            holder.itemView.setLayoutParams(lp);
-        }
-
-        @Override
-        public int getItemCount() {
-            return products != null ? products.size() : 0;
-        }
-
-        static class ViewHolder extends RecyclerView.ViewHolder {
-            TextView txtName, txtDetail;
-
-            ViewHolder(@NonNull View itemView) {
-                super(itemView);
-                txtName = itemView.findViewById(android.R.id.text1);
-                txtDetail = itemView.findViewById(android.R.id.text2);
-            }
-        }
-    }
-
-    // =========================================================================
-    // CartAdapter (inner class)
-    // =========================================================================
-    static class CartAdapter extends RecyclerView.Adapter<CartAdapter.ViewHolder> {
-
-        interface CartCallback {
-            void onQuantityChanged(int position, int newQty);
-            void onRemove(int position);
-        }
-
-        private final List<CartItem> items;
-        private final CartCallback callback;
-
-        CartAdapter(List<CartItem> items, CartCallback callback) {
-            this.items = items;
-            this.callback = callback;
-        }
-
-        @NonNull
-        @Override
-        public ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-            LinearLayout layout = new LinearLayout(parent.getContext());
-            layout.setOrientation(LinearLayout.HORIZONTAL);
-            layout.setGravity(android.view.Gravity.CENTER_VERTICAL);
-            layout.setLayoutParams(new RecyclerView.LayoutParams(
-                    RecyclerView.LayoutParams.MATCH_PARENT,
-                    RecyclerView.LayoutParams.WRAP_CONTENT));
-
-            int pad = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 8,
-                    parent.getResources().getDisplayMetrics());
-            layout.setPadding(pad, pad / 2, pad, pad / 2);
-
-            // Name + price column
-            LinearLayout infoCol = new LinearLayout(parent.getContext());
-            infoCol.setOrientation(LinearLayout.VERTICAL);
-            LinearLayout.LayoutParams infoLp = new LinearLayout.LayoutParams(
-                    0, LinearLayout.LayoutParams.WRAP_CONTENT, 1f);
-            infoCol.setLayoutParams(infoLp);
-
-            TextView txtName = new TextView(parent.getContext());
-            txtName.setId(android.R.id.text1);
-            txtName.setTextSize(TypedValue.COMPLEX_UNIT_SP, 13);
-            txtName.setMaxLines(1);
-            infoCol.addView(txtName);
-
-            TextView txtPrice = new TextView(parent.getContext());
-            txtPrice.setId(android.R.id.text2);
-            txtPrice.setTextSize(TypedValue.COMPLEX_UNIT_SP, 11);
-            txtPrice.setTextColor(0xFF666666);
-            infoCol.addView(txtPrice);
-
-            layout.addView(infoCol);
-
-            // Minus button
-            MaterialButton btnMinus = new MaterialButton(parent.getContext(), null,
-                    com.google.android.material.R.attr.materialButtonOutlinedStyle);
-            btnMinus.setText("-");
-            btnMinus.setMinWidth(0);
-            btnMinus.setMinimumWidth(0);
-            btnMinus.setMinHeight(0);
-            btnMinus.setMinimumHeight(0);
-            int bp = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 4,
-                    parent.getResources().getDisplayMetrics());
-            btnMinus.setPadding(bp, 0, bp, 0);
-            btnMinus.setInsetTop(0);
-            btnMinus.setInsetBottom(0);
-            LinearLayout.LayoutParams btnLp = new LinearLayout.LayoutParams(
-                    LinearLayout.LayoutParams.WRAP_CONTENT,
-                    (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 32,
-                            parent.getResources().getDisplayMetrics()));
-            btnLp.setMargins(bp, 0, 0, 0);
-            btnMinus.setLayoutParams(btnLp);
-            layout.addView(btnMinus);
-
-            // Qty text
-            TextView txtQty = new TextView(parent.getContext());
-            txtQty.setTextSize(TypedValue.COMPLEX_UNIT_SP, 14);
-            txtQty.setGravity(android.view.Gravity.CENTER);
-            LinearLayout.LayoutParams qtyLp = new LinearLayout.LayoutParams(
-                    (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 32,
-                            parent.getResources().getDisplayMetrics()),
-                    LinearLayout.LayoutParams.WRAP_CONTENT);
-            txtQty.setLayoutParams(qtyLp);
-            layout.addView(txtQty);
-
-            // Plus button
-            MaterialButton btnPlus = new MaterialButton(parent.getContext(), null,
-                    com.google.android.material.R.attr.materialButtonOutlinedStyle);
-            btnPlus.setText("+");
-            btnPlus.setMinWidth(0);
-            btnPlus.setMinimumWidth(0);
-            btnPlus.setMinHeight(0);
-            btnPlus.setMinimumHeight(0);
-            btnPlus.setPadding(bp, 0, bp, 0);
-            btnPlus.setInsetTop(0);
-            btnPlus.setInsetBottom(0);
-            btnPlus.setLayoutParams(new LinearLayout.LayoutParams(btnLp));
-            layout.addView(btnPlus);
-
-            // Line total
-            TextView txtLineTotal = new TextView(parent.getContext());
-            txtLineTotal.setTextSize(TypedValue.COMPLEX_UNIT_SP, 13);
-            txtLineTotal.setGravity(android.view.Gravity.END);
-            LinearLayout.LayoutParams totalLp = new LinearLayout.LayoutParams(
-                    (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 72,
-                            parent.getResources().getDisplayMetrics()),
-                    LinearLayout.LayoutParams.WRAP_CONTENT);
-            totalLp.setMargins(bp, 0, 0, 0);
-            txtLineTotal.setLayoutParams(totalLp);
-            layout.addView(txtLineTotal);
-
-            return new ViewHolder(layout, txtName, txtPrice, btnMinus, txtQty, btnPlus, txtLineTotal);
-        }
-
-        @Override
-        public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
-            CartItem item = items.get(position);
-
-            holder.txtName.setText(item.name);
-            holder.txtPrice.setText(String.format("P%,.2f", item.unitPrice));
-            holder.txtQty.setText(String.valueOf(item.quantity));
-            holder.txtLineTotal.setText(String.format("P%,.2f", item.getLineTotal()));
-
-            holder.btnMinus.setOnClickListener(v -> {
-                int pos = holder.getAdapterPosition();
-                if (pos == RecyclerView.NO_POSITION) return;
-                CartItem ci = items.get(pos);
-                if (ci.quantity <= 1) {
-                    callback.onRemove(pos);
-                } else {
-                    callback.onQuantityChanged(pos, ci.quantity - 1);
-                }
-            });
-
-            holder.btnPlus.setOnClickListener(v -> {
-                int pos = holder.getAdapterPosition();
-                if (pos == RecyclerView.NO_POSITION) return;
-                CartItem ci = items.get(pos);
-                callback.onQuantityChanged(pos, ci.quantity + 1);
-            });
-
-            // Long press to remove
-            holder.itemView.setOnLongClickListener(v -> {
-                int pos = holder.getAdapterPosition();
-                if (pos != RecyclerView.NO_POSITION) {
-                    callback.onRemove(pos);
-                }
-                return true;
-            });
-        }
-
-        @Override
-        public int getItemCount() {
-            return items.size();
-        }
-
-        static class ViewHolder extends RecyclerView.ViewHolder {
-            final TextView txtName, txtPrice, txtQty, txtLineTotal;
-            final MaterialButton btnMinus, btnPlus;
-
-            ViewHolder(View itemView, TextView txtName, TextView txtPrice,
-                       MaterialButton btnMinus, TextView txtQty,
-                       MaterialButton btnPlus, TextView txtLineTotal) {
-                super(itemView);
-                this.txtName = txtName;
-                this.txtPrice = txtPrice;
-                this.btnMinus = btnMinus;
-                this.txtQty = txtQty;
-                this.btnPlus = btnPlus;
-                this.txtLineTotal = txtLineTotal;
-            }
-        }
     }
 }

@@ -82,18 +82,24 @@ public class EscPosCommands {
 
             // Items header
             out.write(BOLD_ON);
-            out.write(String.format("%-16s %3s %5s %6s\n", "Item", "Qty", "Price", "Total").getBytes());
+            out.write(String.format("%-14s %3s %6s %7s\n", "Item", "Qty", "Price", "Total").getBytes());
             out.write(BOLD_OFF);
             out.write(dashes());
 
             // Items
             for (ReceiptItem item : data.items) {
-                String name = item.name.length() > LINE_WIDTH ? item.name.substring(0, LINE_WIDTH) : item.name;
+                String name = item.name;
+                if (name.length() > LINE_WIDTH) {
+                    name = name.substring(0, LINE_WIDTH);
+                }
                 out.write((name + "\n").getBytes());
-                String line = String.format("%16s %3d %5s %6s\n", "",
+                String line = String.format("  %3d x %-8s %8s\n",
                         item.quantity,
-                        formatP(item.unitPrice),
-                        formatP(item.total));
+                        "P" + formatP(item.unitPrice),
+                        "P" + formatP(item.total));
+                if (line.length() > LINE_WIDTH + 1) {
+                    line = line.substring(0, LINE_WIDTH) + "\n";
+                }
                 out.write(line.getBytes());
             }
 
@@ -130,7 +136,10 @@ public class EscPosCommands {
 
             // Footer
             out.write(ALIGN_CENTER);
+            out.write("\n".getBytes());
             out.write("Thank you for your purchase!\n".getBytes());
+            out.write("This serves as your\n".getBytes());
+            out.write("Official Receipt\n".getBytes());
             out.write("\n".getBytes());
 
             out.write(FEED_3);

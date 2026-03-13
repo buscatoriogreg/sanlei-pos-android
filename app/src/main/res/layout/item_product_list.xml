@@ -7,43 +7,32 @@
     android:clickable="true"
     android:focusable="true"
     android:foreground="?attr/selectableItemBackground"
-    app:cardCornerRadius="10dp"
+    app:cardCornerRadius="8dp"
     app:cardElevation="2dp">
 
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="vertical">
+        android:orientation="horizontal"
+        android:gravity="center_vertical"
+        android:padding="8dp">
 
         <!-- Product image -->
-        <FrameLayout
-            android:layout_width="match_parent"
-            android:layout_height="100dp"
-            android:background="#F3F4F6">
-
-            <ImageView
-                android:id="@+id/imgProduct"
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:scaleType="centerCrop"
-                android:contentDescription="Product image" />
-
-            <!-- Placeholder icon when no image -->
-            <ImageView
-                android:id="@+id/imgPlaceholder"
-                android:layout_width="40dp"
-                android:layout_height="40dp"
-                android:layout_gravity="center"
-                android:src="@android:drawable/ic_menu_gallery"
-                android:alpha="0.3"
-                android:contentDescription="No image" />
-        </FrameLayout>
+        <ImageView
+            android:id="@+id/imgProduct"
+            android:layout_width="56dp"
+            android:layout_height="56dp"
+            android:scaleType="centerCrop"
+            android:background="#F3F4F6"
+            android:contentDescription="Product image" />
 
         <LinearLayout
-            android:layout_width="match_parent"
+            android:layout_width="0dp"
             android:layout_height="wrap_content"
+            android:layout_weight="1"
             android:orientation="vertical"
-            android:padding="8dp">
+            android:paddingStart="10dp"
+            android:paddingEnd="4dp">
 
             <!-- Product name -->
             <TextView
@@ -51,9 +40,9 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:ellipsize="end"
-                android:maxLines="2"
+                android:maxLines="1"
                 android:textColor="#1F2937"
-                android:textSize="13sp"
+                android:textSize="14sp"
                 android:textStyle="bold" />
 
             <!-- Generic name -->
@@ -65,21 +54,27 @@
                 android:maxLines="1"
                 android:textColor="#9CA3AF"
                 android:textSize="11sp" />
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:gravity="end">
 
             <!-- Price -->
             <TextView
                 android:id="@+id/txtPrice"
-                android:layout_width="match_parent"
+                android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="4dp"
                 android:textColor="#059669"
-                android:textSize="15sp"
+                android:textSize="14sp"
                 android:textStyle="bold" />
 
             <!-- Stock -->
             <TextView
                 android:id="@+id/txtStock"
-                android:layout_width="match_parent"
+                android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:textColor="#9CA3AF"
                 android:textSize="11sp" />

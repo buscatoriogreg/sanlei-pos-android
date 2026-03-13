@@ -261,12 +261,19 @@
                         android:gravity="center"
                         android:background="@android:drawable/editbox_background" />
 
-                    <LinearLayout
-                        android:id="@+id/layoutDenominations"
+                    <HorizontalScrollView
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:gravity="center"
-                        android:layout_marginTop="4dp" />
+                        android:scrollbars="none"
+                        android:layout_marginTop="4dp">
+
+                        <LinearLayout
+                            android:id="@+id/layoutDenominations"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:orientation="horizontal"
+                            android:gravity="center" />
+                    </HorizontalScrollView>
                 </LinearLayout>
 
                 <!-- Charge button -->

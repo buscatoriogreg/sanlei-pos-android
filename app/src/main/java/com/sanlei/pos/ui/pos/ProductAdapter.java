@@ -15,12 +15,16 @@ import java.util.List;
 
 public class ProductAdapter extends RecyclerView.Adapter<ProductAdapter.ViewHolder> {
 
+    public static final int VIEW_TYPE_GRID = 0;
+    public static final int VIEW_TYPE_LIST = 1;
+
     public interface OnProductClickListener {
         void onProductClick(ProductEntity product);
     }
 
     private List<ProductEntity> products = new ArrayList<>();
-    private OnProductClickListener listener;
+    private final OnProductClickListener listener;
+    private int viewType = VIEW_TYPE_GRID;
 
     public ProductAdapter(OnProductClickListener listener) {
         this.listener = listener;
@@ -31,19 +35,39 @@ public class ProductAdapter extends RecyclerView.Adapter<ProductAdapter.ViewHold
         notifyDataSetChanged();
     }
 
+    public void setViewType(int viewType) {
+        this.viewType = viewType;
+        notifyDataSetChanged();
+    }
+
+    public int getViewType() {
+        return viewType;
+    }
+
+    @Override
+    public int getItemViewType(int position) {
+        return viewType;
+    }
+
     @NonNull
     @Override
     public ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-        View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.item_product, parent, false);
-        return new ViewHolder(view);
+        int layoutRes = viewType == VIEW_TYPE_LIST ? R.layout.item_product_list : R.layout.item_product;
+        View view = LayoutInflater.from(parent.getContext()).inflate(layoutRes, parent, false);
+        return new ViewHolder(view, viewType);
     }
 
     @Override
     public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
         ProductEntity product = products.get(position);
         holder.txtProductName.setText(product.name);
-        holder.txtGenericName.setText(product.genericName != null ? product.genericName : "");
-        holder.txtGenericName.setVisibility(product.genericName != null && !product.genericName.isEmpty() ? View.VISIBLE : View.GONE);
+
+        if (holder.txtGenericName != null) {
+            holder.txtGenericName.setText(product.genericName != null ? product.genericName : "");
+            holder.txtGenericName.setVisibility(
+                    product.genericName != null && !product.genericName.isEmpty() ? View.VISIBLE : View.GONE);
+        }
+
         holder.txtPrice.setText(String.format("P%,.2f", product.sellingPrice));
         holder.txtStock.setText("Stock: " + product.stock);
 
@@ -52,11 +76,18 @@ public class ProductAdapter extends RecyclerView.Adapter<ProductAdapter.ViewHold
             String imageUrl = "https://sp.rgbpos.com/storage/" + product.image;
             Glide.with(holder.itemView.getContext())
                 .load(imageUrl)
-                .placeholder(R.drawable.circle_green)
+                .centerCrop()
+                .placeholder(android.R.color.transparent)
                 .into(holder.imgProduct);
             holder.imgProduct.setVisibility(View.VISIBLE);
+            if (holder.imgPlaceholder != null) {
+                holder.imgPlaceholder.setVisibility(View.GONE);
+            }
         } else {
-            holder.imgProduct.setVisibility(View.GONE);
+            holder.imgProduct.setImageDrawable(null);
+            if (holder.imgPlaceholder != null) {
+                holder.imgPlaceholder.setVisibility(View.VISIBLE);
+            }
         }
 
         // Stock warning
@@ -78,11 +109,13 @@ public class ProductAdapter extends RecyclerView.Adapter<ProductAdapter.ViewHold
 
     static class ViewHolder extends RecyclerView.ViewHolder {
         ImageView imgProduct;
+        ImageView imgPlaceholder;
         TextView txtProductName, txtGenericName, txtPrice, txtStock;
 
-        ViewHolder(@NonNull View itemView) {
+        ViewHolder(@NonNull View itemView, int viewType) {
             super(itemView);
             imgProduct = itemView.findViewById(R.id.imgProduct);
+            imgPlaceholder = itemView.findViewById(R.id.imgPlaceholder);
             txtProductName = itemView.findViewById(R.id.txtProductName);
             txtGenericName = itemView.findViewById(R.id.txtGenericName);
             txtPrice = itemView.findViewById(R.id.txtPrice);
