@@ -5,6 +5,9 @@ on:
     branches: [ main ]
   workflow_dispatch:
 
+permissions:
+  contents: write
+
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -27,27 +30,10 @@ jobs:
       - name: Build Release APK
         run: ./gradlew assembleRelease
 
-      - name: Sign APK
-        id: sign
-        uses: r0adkll/sign-android-release@v1
-        with:
-          releaseDirectory: app/build/outputs/apk/release
-          signingKeyBase64: ${{ secrets.SIGNING_KEY }}
-          alias: ${{ secrets.KEY_ALIAS }}
-          keyStorePassword: ${{ secrets.KEY_STORE_PASSWORD }}
-          keyPassword: ${{ secrets.KEY_PASSWORD }}
-        env:
-          BUILD_TOOLS_VERSION: "34.0.0"
-        continue-on-error: true
-
       - name: Rename APK
         run: |
           mkdir -p output
-          if [ -f "${{ steps.sign.outputs.signedReleaseFile }}" ]; then
-            cp "${{ steps.sign.outputs.signedReleaseFile }}" output/sanlei-pos.apk
-          else
-            cp app/build/outputs/apk/release/app-release-unsigned.apk output/sanlei-pos.apk
-          fi
+          cp app/build/outputs/apk/release/app-release-unsigned.apk output/sanlei-pos.apk
 
       - name: Upload APK artifact
         uses: actions/upload-artifact@v4
@@ -62,6 +48,4 @@ jobs:
           tag_name: v1.0.${{ github.run_number }}
           name: Sanlei POS v1.0.${{ github.run_number }}
           files: output/sanlei-pos.apk
-          generate_release_notes: true
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          generate_release_notes: false
