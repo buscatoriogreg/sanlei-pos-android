@@ -78,7 +78,7 @@ public class TransactionsActivity extends AppCompatActivity {
         setContentView(R.layout.activity_transactions);
 
         session = new SessionManager(this);
-        api = ApiClient.getService(session.getToken());
+        api = ApiClient.getService(this);
         printerService = new BluetoothPrinterService(this);
 
         MaterialToolbar toolbar = findViewById(R.id.toolbar);
@@ -468,16 +468,17 @@ public class TransactionsActivity extends AppCompatActivity {
         executor.execute(() -> {
             try {
                 EscPosCommands.ReceiptData rd = new EscPosCommands.ReceiptData();
-                rd.storeName = "Sanlei Pharmacy";
                 rd.branchName = session.getBranchName();
+                rd.branchAddress = session.getBranchAddress();
+                rd.branchPhone = session.getBranchPhone();
                 rd.invoiceNumber = sale.get("invoice_number").getAsString();
                 rd.cashierName = sale.has("cashier") && !sale.get("cashier").isJsonNull()
                         ? sale.get("cashier").getAsString() : "";
                 rd.dateTime = formatDate(sale.get("created_at").getAsString());
                 rd.paymentMethod = sale.get("payment_method").getAsString();
                 rd.subtotal = sale.get("subtotal").getAsDouble();
-                rd.discount = sale.get("discount_amount").getAsDouble();
-                rd.total = sale.get("total_amount").getAsDouble();
+                rd.discountAmount = sale.get("discount_amount").getAsDouble();
+                rd.totalAmount = sale.get("total_amount").getAsDouble();
                 rd.amountPaid = sale.get("amount_paid").getAsDouble();
                 rd.change = sale.get("change_amount").getAsDouble();
 
