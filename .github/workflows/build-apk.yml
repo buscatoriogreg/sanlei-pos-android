@@ -24,11 +24,11 @@ jobs:
       - name: Setup Android SDK
         uses: android-actions/setup-android@v3
 
-      - name: Grant execute permission for gradlew
-        run: chmod +x gradlew
-
       - name: Decode Keystore
         run: echo "${{ secrets.KEYSTORE_BASE64 }}" | base64 -d > ${{ github.workspace }}/sanlei-pos.jks
+
+      - name: Grant execute permission for gradlew
+        run: chmod +x gradlew
 
       - name: Build Signed Release APK
         env:
@@ -53,7 +53,7 @@ jobs:
         uses: softprops/action-gh-release@v2
         if: github.ref == 'refs/heads/main'
         with:
-          tag_name: v2.0.${{ github.run_number }}
-          name: Sanlei POS v2.0.${{ github.run_number }}
+          tag_name: v3.0.${{ github.run_number }}
+          name: Sanlei POS v3.0.${{ github.run_number }}
           files: output/sanlei-pos.apk
           generate_release_notes: false

@@ -13,3 +13,5 @@ output/
 *.jks
 *.jks.b64
 *.keystore
+keystore/
+keystore-base64.txt

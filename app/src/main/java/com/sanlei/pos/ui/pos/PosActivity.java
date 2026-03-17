@@ -96,6 +96,7 @@ public class PosActivity extends AppCompatActivity {
     // Denomination values
     private static final int[] DENOMINATIONS = {5, 10, 20, 50, 100, 200, 500, 1000};
     private final List<MaterialButton> denomButtons = new ArrayList<>();
+    private MaterialButton btnExactAmount;
 
     // Current payment method
     private String paymentMethod = "cash";
@@ -182,6 +183,10 @@ public class PosActivity extends AppCompatActivity {
                 return true;
             } else if (id == R.id.action_printer_setup) {
                 showPrinterSetupDialog();
+                return true;
+            } else if (id == R.id.action_transactions) {
+                startActivity(new Intent(PosActivity.this,
+                        com.sanlei.pos.ui.transactions.TransactionsActivity.class));
                 return true;
             } else if (id == R.id.action_settings) {
                 onOpenSettings();
@@ -356,6 +361,40 @@ public class PosActivity extends AppCompatActivity {
         int padV = dpToPx(8);
         int margin = dpToPx(4);
 
+        // Exact Amount button (always first)
+        btnExactAmount = new MaterialButton(this, null,
+                com.google.android.material.R.attr.materialButtonStyle);
+        btnExactAmount.setText("EXACT");
+        btnExactAmount.setTextSize(TypedValue.COMPLEX_UNIT_SP, 11);
+        btnExactAmount.setMinWidth(0);
+        btnExactAmount.setMinimumWidth(0);
+        btnExactAmount.setMinHeight(0);
+        btnExactAmount.setMinimumHeight(0);
+        btnExactAmount.setPadding(padH, padV, padH, padV);
+        btnExactAmount.setInsetTop(0);
+        btnExactAmount.setInsetBottom(0);
+        btnExactAmount.setBackgroundColor(0xFF059669);
+        btnExactAmount.setTextColor(0xFFFFFFFF);
+        LinearLayout.LayoutParams exactLp = new LinearLayout.LayoutParams(
+                LinearLayout.LayoutParams.WRAP_CONTENT,
+                LinearLayout.LayoutParams.WRAP_CONTENT);
+        exactLp.setMargins(margin, 0, margin, 0);
+        btnExactAmount.setLayoutParams(exactLp);
+        btnExactAmount.setOnClickListener(v -> {
+            double total = calculateTotal();
+            if (total > 0) {
+                String totalStr = String.format(Locale.US, "%.2f", total);
+                // Remove trailing zeros for whole numbers
+                if (totalStr.endsWith(".00")) {
+                    totalStr = totalStr.substring(0, totalStr.length() - 3);
+                }
+                editAmountPaid.setText(totalStr);
+                editAmountPaid.setSelection(editAmountPaid.getText().length());
+            }
+        });
+        btnExactAmount.setVisibility(View.GONE);
+        layoutDenominations.addView(btnExactAmount);
+
         for (int denom : DENOMINATIONS) {
             MaterialButton btn = new MaterialButton(this, null,
                     com.google.android.material.R.attr.materialButtonOutlinedStyle);
@@ -386,6 +425,10 @@ public class PosActivity extends AppCompatActivity {
     }
 
     private void updateDenominationVisibility(double total) {
+        // Show exact amount button when cart has items
+        if (btnExactAmount != null) {
+            btnExactAmount.setVisibility(total > 0 ? View.VISIBLE : View.GONE);
+        }
         for (MaterialButton btn : denomButtons) {
             int denom = (int) btn.getTag();
             btn.setVisibility(denom >= Math.ceil(total) ? View.VISIBLE : View.GONE);

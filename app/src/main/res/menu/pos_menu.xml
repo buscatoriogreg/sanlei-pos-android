@@ -15,6 +15,11 @@
         app:showAsAction="ifRoom" />
 
     <item
+        android:id="@+id/action_transactions"
+        android:title="Transactions"
+        app:showAsAction="never" />
+
+    <item
         android:id="@+id/action_printer_setup"
         android:title="Printer Setup"
         app:showAsAction="never" />
